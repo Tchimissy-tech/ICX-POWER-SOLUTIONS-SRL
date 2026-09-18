@@ -10,7 +10,11 @@ All website visual assets are stored below `client/public` and are therefore emi
 | `/images/hero-global-team.jpg` | Locally bundled visual | Homepage hero |
 | `/images/study-guidance.jpg` | Locally bundled visual | Homepage study guidance section |
 | `/images/sourcing-logistics.jpg` | Locally bundled visual | Sourcing page hero |
+| `/images/work/*` | Sourced documentary/illustrative images | Work-sector examples on the work-permit page |
+| `/images/partnership/*` | Sourced documentary/illustrative images | Professional and Africa–Europe cooperation imagery |
 
 ## Jean Lansana KOUNDOUNO profile photo
 
 The supplied photograph is bundled at `client/public/jean-lansana-koundouno.jpg` and the leader mapping now uses `/jean-lansana-koundouno.jpg`.
+
+The work and partnership image files are copied into `client/public/images` so Vite emits them into the production bundle and Render serves them locally. Visible credits and watermarks have been retained where present. Search-result sources used for the illustrative set include GlobalWorker/Working in Romania, Alamy, InterMann, the Embassy of Moldova in the United Kingdom, and Expertise France.

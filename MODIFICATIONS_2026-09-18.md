@@ -36,3 +36,13 @@ The supplied photograph is now bundled as `client/public/jean-lansana-koundouno.
 ## Validation
 
 `pnpm check`, `pnpm build` and `pnpm test` pass. The browser was checked on the new real-estate route, study-contact route and university directory. The new routes render at the top of the page and expose the expected forms and labels.
+
+## Enhancements added on 2026-09-18 23:31
+
+The university filter now has a working country selector, free-text search, result count and reset button. The directory now contains ten institutions from France, Belgium, Russia, China, Romania, Canada and the United States.
+
+The Services page now includes a message from K Marcel TRAORE, Responsable des opérations et de la coordination. The Partners page now includes a message from Jean Lansana KOUNDOUNO, Représentant légal, anonymised illustrative testimonials, professional meeting images and Africa–Europe cultural cooperation imagery with visible credits retained.
+
+The Work permits page now includes local Render-compatible illustrative photos for catering, construction, delivery/logistics, electrical maintenance, cleaning, driving/transport and retail/large stores. They are explicitly labelled as sector illustrations and not job offers or placement guarantees.
+
+All new image paths are root-relative files under `client/public/images`, so they are emitted by Vite and served by Render without Manus Storage or remote runtime dependencies.
