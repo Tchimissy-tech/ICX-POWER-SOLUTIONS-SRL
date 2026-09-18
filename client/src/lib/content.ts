@@ -181,7 +181,7 @@ export function localizedServices(locale: Locale): Service[] {
 
 export function localizedInstitution(institution: Institution, locale: Locale): Institution {
   const meta = pageTranslations[locale].institutionMeta;
-  return { ...institution, relation: meta.relation, summary: meta.summary, verifiedAt: meta.verified, levels: [meta.programmes], languages: [meta.languages] };
+  return { ...institution, country: localizedCountries[locale][institution.country] ?? institution.country, relation: meta.relation, summary: meta.summary, verifiedAt: meta.verified, levels: [meta.programmes], languages: [meta.languages] };
 }
 export type Service = { key: string; title: string; eyebrow: string; description: string; href: string; icon: LucideIcon; accent: string };
 export const services: Service[] = [
@@ -224,3 +224,19 @@ export const featuredInstitutions: Institution[] = [
 ];
 export const applicationTimeline = [["01", "Exploration", "Pays, niveau, domaine, budget et langue."], ["02", "Sélection", "Consultez les sources officielles des établissements."], ["03", "Dossier ICX", "Créez votre espace et déposez les éléments demandés."], ["04", "Suivi", "Suivez les statuts et les demandes de compléments."] ] as const;
 export const disclosure = "ICX POWER SOLUTIONS accompagne les candidats dans leur processus d’orientation, d’admission et d’assistance administrative selon les établissements et services disponibles. Les critères, frais, délais, décisions et permis relèvent des autorités et établissements concernés et doivent être confirmés sur leurs sources officielles.";
+
+const localizedCountries: Record<Locale, Record<string, string>> = {
+  fr: { "Roumanie": "Roumanie", "France": "France", "Allemagne": "Allemagne", "Belgique": "Belgique", "Espagne": "Espagne", "Portugal": "Portugal", "Italie": "Italie", "Pays-Bas": "Pays-Bas", "Pologne": "Pologne", "Hongrie": "Hongrie", "Irlande": "Irlande", "Suède": "Suède", "Canada": "Canada", "États-Unis": "États-Unis", "Chine": "Chine", "Russie": "Russie" },
+  en: { "Roumanie": "Romania", "France": "France", "Allemagne": "Germany", "Belgique": "Belgium", "Espagne": "Spain", "Portugal": "Portugal", "Italie": "Italy", "Pays-Bas": "Netherlands", "Pologne": "Poland", "Hongrie": "Hungary", "Irlande": "Ireland", "Suède": "Sweden", "Canada": "Canada", "États-Unis": "United States", "Chine": "China", "Russie": "Russia" },
+  ro: { "Roumanie": "România", "France": "Franța", "Allemagne": "Germania", "Belgique": "Belgia", "Espagne": "Spania", "Portugal": "Portugalia", "Italie": "Italia", "Pays-Bas": "Țările de Jos", "Pologne": "Polonia", "Hongrie": "Ungaria", "Irlande": "Irlanda", "Suède": "Suedia", "Canada": "Canada", "États-Unis": "Statele Unite", "Chine": "China", "Russie": "Rusia" },
+  pt: { "Roumanie": "Roménia", "France": "França", "Allemagne": "Alemanha", "Belgique": "Bélgica", "Espagne": "Espanha", "Portugal": "Portugal", "Italie": "Itália", "Pays-Bas": "Países Baixos", "Pologne": "Polónia", "Hongrie": "Hungria", "Irlande": "Irlanda", "Suède": "Suécia", "Canada": "Canadá", "États-Unis": "Estados Unidos", "Chine": "China", "Russie": "Rússia" },
+  ar: { "Roumanie": "رومانيا", "France": "فرنسا", "Allemagne": "ألمانيا", "Belgique": "بلجيكا", "Espagne": "إسبانيا", "Portugal": "البرتغال", "Italie": "إيطاليا", "Pays-Bas": "هولندا", "Pologne": "بولندا", "Hongrie": "المجر", "Irlande": "أيرلندا", "Suède": "السويد", "Canada": "كندا", "États-Unis": "الولايات المتحدة", "Chine": "الصين", "Russie": "روسيا" },
+};
+
+export const fallbackCopy: Record<Locale, { loading: string; title: string; body: string; home: string }> = {
+  fr: { loading: "Chargement…", title: "Page introuvable", body: "La page que vous recherchez n’existe pas ou a été déplacée.", home: "Retour à l’accueil" },
+  en: { loading: "Loading…", title: "Page not found", body: "The page you are looking for does not exist or has been moved.", home: "Back to home" },
+  ro: { loading: "Se încarcă…", title: "Pagina nu a fost găsită", body: "Pagina pe care o cauți nu există sau a fost mutată.", home: "Înapoi la pagina principală" },
+  pt: { loading: "A carregar…", title: "Página não encontrada", body: "A página que procura não existe ou foi movida.", home: "Voltar ao início" },
+  ar: { loading: "جارٍ التحميل…", title: "الصفحة غير موجودة", body: "الصفحة التي تبحث عنها غير موجودة أو تم نقلها.", home: "العودة إلى الرئيسية" },
+};
