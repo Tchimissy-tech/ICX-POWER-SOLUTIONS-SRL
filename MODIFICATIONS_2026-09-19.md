@@ -13,3 +13,9 @@ Les boutons « Créer un compte » et « Se connecter » utilisent le flux Manus
 ## Références d’enregistrement
 
 La page d’accueil affiche désormais CUI 54675848, numéro du Registre du Commerce J2026031336000, EUID ROONRC.J2026031336000, siège Str. Hlincea nr. 47, Iași, Roumanie, date de création du 13 mai 2026 et CAEN principal 7020. Les références ont été recoupées avec les fiches publiques RisCo et ListaFirme et sont accompagnées d’un avertissement demandant une revalidation auprès de l’ONRC avant usage juridique.
+
+## Ajout complémentaire — dépôt depuis les pages de contact
+
+Les pages de contact « Étudier à l’étranger », « Permis de travail » et « Demande de partenariat » comportent désormais un champ de dépôt directement dans le formulaire. La sélection multiple accepte jusqu’à 20 fichiers PDF, JPG ou PNG de 4 Mo maximum par fichier. Les fichiers sélectionnés sont téléversés automatiquement après création de la demande et liés à sa référence privée ; le demandeur peut ensuite compléter le dossier depuis l’espace documentaire sécurisé.
+
+La compilation, les contrôles TypeScript et les trois tests Vitest ont été exécutés avec succès.

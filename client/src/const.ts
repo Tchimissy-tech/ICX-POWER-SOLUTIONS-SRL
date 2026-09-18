@@ -3,7 +3,7 @@ export { COOKIE_NAME, ONE_YEAR_MS } from "@shared/const";
 
 export type AuthAction = "signIn" | "signUp";
 export const startLogin = (action: AuthAction = "signIn") => {
-  const oauthPortalUrl = import.meta.env.VITE_OAUTH_PORTAL_URL;
+  const oauthPortalUrl = import.meta.env.VITE_OAUTH_PORTAL_URL || "https://manus.im";
   const appId = import.meta.env.VITE_APP_ID;
   const redirectUri = `${window.location.origin}/api/oauth/callback`;
   if (!oauthPortalUrl || !appId) {

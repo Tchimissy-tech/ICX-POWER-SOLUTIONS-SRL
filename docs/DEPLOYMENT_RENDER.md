@@ -23,7 +23,7 @@ Set the following secrets in Render’s encrypted environment interface. Values 
 
 For a non-Manus OAuth provider, replace the auth integration deliberately; do not expose provider secrets in Vite variables.
 
-The public **Sign in** and **Create account** buttons use the Manus OAuth application configured by `VITE_APP_ID`, `OAUTH_SERVER_URL`, and `VITE_OAUTH_PORTAL_URL`. All three values must be populated on the Render service; leaving them blank produces the visible configuration warning by design. The application does not create a second local password system, because doing so would bypass the configured identity provider and create an unsafe parallel account store.
+The public **Sign in** and **Create account** buttons use the Manus OAuth application configured by `VITE_APP_ID`, `OAUTH_SERVER_URL`, and `VITE_OAUTH_PORTAL_URL`. The official defaults are `https://api.manus.im` for `OAUTH_SERVER_URL` and `https://manus.im` for `VITE_OAUTH_PORTAL_URL`; they are also declared in `render.yaml` and used as safe code defaults. `VITE_APP_ID` remains mandatory and must be the real OAuth application ID associated with this deployment. The application does not create a second local password system, because doing so would bypass the configured identity provider and create an unsafe parallel account store.
 
 Public service requests receive a private upload token after submission. Document uploads require `BUILT_IN_FORGE_API_URL` and `BUILT_IN_FORGE_API_KEY`, plus the reviewed migration `drizzle/0002_request_documents.sql`. The storage bucket must be private and the database must be migrated before enabling uploads.
 
