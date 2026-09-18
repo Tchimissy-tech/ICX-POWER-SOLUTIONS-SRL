@@ -19,3 +19,11 @@ La page d’accueil affiche désormais CUI 54675848, numéro du Registre du Comm
 Les pages de contact « Étudier à l’étranger », « Permis de travail » et « Demande de partenariat » comportent désormais un champ de dépôt directement dans le formulaire. La sélection multiple accepte jusqu’à 20 fichiers PDF, JPG ou PNG de 4 Mo maximum par fichier. Les fichiers sélectionnés sont téléversés automatiquement après création de la demande et liés à sa référence privée ; le demandeur peut ensuite compléter le dossier depuis l’espace documentaire sécurisé.
 
 La compilation, les contrôles TypeScript et les trois tests Vitest ont été exécutés avec succès.
+
+## Administration, contacts et chat — 19 septembre 2026
+
+Le tableau de bord `/admin` permet désormais au personnel ICX autorisé de consulter les comptes, dossiers d’études, demandes de services et documents reçus. Il permet de valider ou refuser les comptes, de faire évoluer les statuts des dossiers et demandes, et d’accepter ou rejeter les documents. Chaque opération passe par une procédure protégée par rôle et crée un journal d’audit. La migration `drizzle/0003_account_approval.sql` ajoute le statut de validation des comptes.
+
+Les coordonnées publiques ont été ajoutées au pied de page : icxps.sale@outlook.com, représentant légal +40 745 437 748, responsable des opérations et de la coordination +40 753 413 765.
+
+La page `/chat` propose une discussion d’orientation avec l’assistant IA ICX. L’assistant donne des informations générales avant le traitement humain, rappelle qu’il ne garantit ni emploi, permis, admission, prix ou partenariat, et renvoie vers les responsables pour toute décision ou validation. L’appel utilise `invokeLLM` côté serveur et exige les variables Render `BUILT_IN_FORGE_API_URL` et `BUILT_IN_FORGE_API_KEY`.

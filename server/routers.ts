@@ -15,12 +15,21 @@ import {
   listInstitutions,
   listServiceRequests,
   listDocumentsForServiceRequest,
+  listAdminApplications,
+  listAdminDocuments,
+  getAdminDocument,
+  listUsersForAdmin,
+  updateApplicationStatus,
+  updateServiceRequestDocumentStatus,
+  updateServiceRequestStatus,
+  updateUserAccountStatus,
 } from "./db";
 import { COOKIE_NAME } from "@shared/const";
 import { getSessionCookieOptions } from "./_core/cookies";
 import { systemRouter } from "./_core/systemRouter";
 import { protectedProcedure, publicProcedure, router } from "./_core/trpc";
-import { storagePut } from "./storage";
+import { storageGetSignedUrl, storagePut } from "./storage";
+import { invokeLLM } from "./_core/llm";
 
 const staffRoles = new Set((userRoles as readonly string[]).filter((role) => role !== "user"));
 const staffProcedure = protectedProcedure.use(({ ctx, next }) => {
@@ -149,7 +158,21 @@ export const appRouter = router({
   admin: router({
     metrics: staffProcedure.query(() => getAdminMetrics()),
     requests: staffProcedure.query(() => listServiceRequests()),
+    users: staffProcedure.query(() => listUsersForAdmin()),
+    applications: staffProcedure.query(() => listAdminApplications()),
+    documents: staffProcedure.query(() => listAdminDocuments()),
+    updateUserStatus: staffProcedure.input(z.object({ id: z.number().int().positive(), accountStatus: z.enum(["pending", "approved", "rejected"]) })).mutation(({ ctx, input }) => updateUserAccountStatus(input.id, input.accountStatus, ctx.user.id)),
+    updateRequestStatus: staffProcedure.input(z.object({ id: z.number().int().positive(), status: z.enum(["received", "analysis", "in_progress", "waiting", "closed"]) })).mutation(({ ctx, input }) => updateServiceRequestStatus(input.id, input.status, ctx.user.id)),
+    documentUrl: staffProcedure.input(z.object({ id: z.number().int().positive() })).query(async ({ input }) => { const document = await getAdminDocument(input.id); if (!document) throw new TRPCError({ code: "NOT_FOUND" }); return { url: await storageGetSignedUrl(document.fileKey) }; }),
+    updateDocumentStatus: staffProcedure.input(z.object({ id: z.number().int().positive(), validationStatus: z.enum(["pending", "accepted", "rejected"]) })).mutation(({ ctx, input }) => updateServiceRequestDocumentStatus(input.id, input.validationStatus, ctx.user.id)),
+    updateApplicationStatus: staffProcedure.input(z.object({ id: z.number().int().positive(), status: z.enum(["DRAFT", "RECEIVED", "VERIFICATION", "MISSING_DOCUMENTS", "COMPLETE", "SUBMISSION", "PENDING_RESPONSE", "ADMITTED", "NOT_ADMITTED"]) })).mutation(({ ctx, input }) => updateApplicationStatus(input.id, input.status, ctx.user.id)),
     transitionGuide: staffProcedure.query(() => applicationStatuses),
+  }),
+  ai: router({
+    chat: publicProcedure.input(z.object({ messages: z.array(z.object({ role: z.enum(["user", "assistant"]), content: z.string().min(1).max(4000) })).max(12), locale: z.string().max(8).default("fr") })).mutation(async ({ input }) => {
+      const response = await invokeLLM({ model: "gpt-5-mini", maxTokens: 700, messages: [{ role: "system", content: `Tu es l’assistant d’orientation d’ICX POWER SOLUTIONS SRL. Réponds en ${input.locale === "fr" ? "français" : "anglais"}, de manière concise et professionnelle. Donne uniquement des informations générales sur les études, permis de travail, partenariats, sourcing et demandes ICX. Ne promets jamais un emploi, un permis, une admission ou un partenariat. Pour une décision, un tarif, un contrat ou une validation de dossier, renvoie vers les responsables humains. Indique les contacts si pertinent : icxps.sale@outlook.com, représentant légal +40 745 437 748, opérations et coordination +40 753 413 765.` }, ...input.messages] });
+      return typeof response.choices[0]?.message.content === "string" ? response.choices[0].message.content : "Veuillez contacter un responsable ICX pour une réponse personnalisée.";
+    }),
   }),
 });
 

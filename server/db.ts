@@ -163,7 +163,7 @@ export async function addServiceRequestDocument(data: typeof serviceRequestDocum
 export async function listDocumentsForServiceRequest(requestId: number, uploadToken: string) {
   const db = await getDb();
   if (!db) return [];
-  return db.select({ id: serviceRequestDocuments.id, documentType: serviceRequestDocuments.documentType, originalName: serviceRequestDocuments.originalName, mimeType: serviceRequestDocuments.mimeType, byteSize: serviceRequestDocuments.byteSize, validationStatus: serviceRequestDocuments.validationStatus, uploadedAt: serviceRequestDocuments.uploadedAt }).from(serviceRequestDocuments).where(and(eq(serviceRequestDocuments.requestId, requestId), eq(serviceRequestDocuments.uploadToken, uploadToken))).orderBy(desc(serviceRequestDocuments.uploadedAt));
+  return db.select({ id: serviceRequestDocuments.id, documentType: serviceRequestDocuments.documentType, originalName: serviceRequestDocuments.originalName, fileKey: serviceRequestDocuments.fileKey, mimeType: serviceRequestDocuments.mimeType, byteSize: serviceRequestDocuments.byteSize, validationStatus: serviceRequestDocuments.validationStatus, uploadedAt: serviceRequestDocuments.uploadedAt }).from(serviceRequestDocuments).where(and(eq(serviceRequestDocuments.requestId, requestId), eq(serviceRequestDocuments.uploadToken, uploadToken))).orderBy(desc(serviceRequestDocuments.uploadedAt));
 }
 
 export async function listServiceRequests() {
@@ -205,4 +205,57 @@ export async function createAuditLog(
     entityId,
     metadata,
   });
+}
+
+export async function listUsersForAdmin() {
+  const db = await getDb();
+  if (!db) return [];
+  return db.select({ id: users.id, name: users.name, email: users.email, role: users.role, accountStatus: users.accountStatus, createdAt: users.createdAt, lastSignedIn: users.lastSignedIn }).from(users).orderBy(desc(users.createdAt)).limit(200);
+}
+
+export async function updateUserAccountStatus(id: number, accountStatus: "pending" | "approved" | "rejected", actorId: number) {
+  const db = await getDb();
+  if (!db) throw new Error("Database unavailable");
+  await db.update(users).set({ accountStatus }).where(eq(users.id, id));
+  await createAuditLog(actorId, `user.${accountStatus}`, "user", String(id));
+}
+
+export async function updateServiceRequestStatus(id: number, status: "received" | "analysis" | "in_progress" | "waiting" | "closed", actorId: number) {
+  const db = await getDb();
+  if (!db) throw new Error("Database unavailable");
+  await db.update(serviceRequests).set({ status }).where(eq(serviceRequests.id, id));
+  await createAuditLog(actorId, `request.${status}`, "service_request", String(id));
+}
+
+export async function listAdminDocuments() {
+  const db = await getDb();
+  if (!db) return [];
+  return db.select({ id: serviceRequestDocuments.id, requestId: serviceRequestDocuments.requestId, originalName: serviceRequestDocuments.originalName, mimeType: serviceRequestDocuments.mimeType, byteSize: serviceRequestDocuments.byteSize, validationStatus: serviceRequestDocuments.validationStatus, uploadedAt: serviceRequestDocuments.uploadedAt }).from(serviceRequestDocuments).orderBy(desc(serviceRequestDocuments.uploadedAt)).limit(200);
+}
+
+export async function updateServiceRequestDocumentStatus(id: number, validationStatus: "pending" | "accepted" | "rejected", actorId: number) {
+  const db = await getDb();
+  if (!db) throw new Error("Database unavailable");
+  await db.update(serviceRequestDocuments).set({ validationStatus }).where(eq(serviceRequestDocuments.id, id));
+  await createAuditLog(actorId, `document.${validationStatus}`, "service_request_document", String(id));
+}
+
+export async function listAdminApplications() {
+  const db = await getDb();
+  if (!db) return [];
+  return db.select({ id: applications.id, reference: applications.reference, userId: applications.userId, destination: applications.destination, studyLevel: applications.studyLevel, field: applications.field, status: applications.status, createdAt: applications.createdAt, updatedAt: applications.updatedAt }).from(applications).orderBy(desc(applications.updatedAt)).limit(200);
+}
+
+export async function updateApplicationStatus(id: number, status: "DRAFT" | "RECEIVED" | "VERIFICATION" | "MISSING_DOCUMENTS" | "COMPLETE" | "SUBMISSION" | "PENDING_RESPONSE" | "ADMITTED" | "NOT_ADMITTED", actorId: number) {
+  const db = await getDb();
+  if (!db) throw new Error("Database unavailable");
+  await db.update(applications).set({ status }).where(eq(applications.id, id));
+  await createAuditLog(actorId, `application.${status}`, "application", String(id));
+}
+
+export async function getAdminDocument(id: number) {
+  const db = await getDb();
+  if (!db) return undefined;
+  const result = await db.select({ id: serviceRequestDocuments.id, fileKey: serviceRequestDocuments.fileKey }).from(serviceRequestDocuments).where(eq(serviceRequestDocuments.id, id)).limit(1);
+  return result[0];
 }
