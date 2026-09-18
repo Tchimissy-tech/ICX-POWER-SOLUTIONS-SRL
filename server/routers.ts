@@ -3,15 +3,18 @@ import { z } from "zod";
 import { applicationStatuses, documentTypes, requestTypes, userRoles } from "../drizzle/schema";
 import {
   addApplicationDocument,
+  addServiceRequestDocument,
   createApplication,
   createServiceRequest,
   getAdminMetrics,
   getApplicationForUser,
+  getServiceRequestByReference,
   getInstitutionBySlug,
   listApplicationsForUser,
   listDocumentsForApplication,
   listInstitutions,
   listServiceRequests,
+  listDocumentsForServiceRequest,
 } from "./db";
 import { COOKIE_NAME } from "@shared/const";
 import { getSessionCookieOptions } from "./_core/cookies";
@@ -110,7 +113,7 @@ export const appRouter = router({
     }),
   }),
   request: router({
-    submit: publicProcedure
+  submit: publicProcedure
       .input(z.object({
         type: z.enum(requestTypes),
         requesterName: z.string().min(2).max(180),
@@ -123,8 +126,25 @@ export const appRouter = router({
       .mutation(async ({ input }) => {
         if (input.website) throw new TRPCError({ code: "BAD_REQUEST" });
         const { website: _website, ...request } = input;
-        return createServiceRequest({ ...request, reference: createReference("REQ"), status: "received" });
+        const uploadToken = crypto.randomUUID() + crypto.randomUUID();
+        const created = await createServiceRequest({ ...request, uploadToken, reference: createReference("REQ"), status: "received" });
+        return { ...created, uploadToken };
       }),
+    documents: publicProcedure.input(z.object({ reference: z.string().regex(/^REQ-\d{4}-[A-Z0-9-]+$/), uploadToken: z.string().min(32).max(96) })).query(async ({ input }) => {
+      const request = await getServiceRequestByReference(input.reference, input.uploadToken);
+      if (!request) throw new TRPCError({ code: "NOT_FOUND" });
+      return listDocumentsForServiceRequest(request.id, input.uploadToken);
+    }),
+    uploadDocument: publicProcedure.input(uploadSchema.extend({ reference: z.string().regex(/^REQ-\d{4}-[A-Z0-9-]+$/), uploadToken: z.string().min(32).max(96) })).mutation(async ({ input }) => {
+      const request = await getServiceRequestByReference(input.reference, input.uploadToken);
+      if (!request) throw new TRPCError({ code: "NOT_FOUND" });
+      const raw = input.base64Content.includes(",") ? input.base64Content.split(",")[1] : input.base64Content;
+      const bytes = Buffer.from(raw, "base64"); validateFile(bytes, input.mimeType);
+      const safeName = cleanFilename(input.fileName);
+      const stored = await storagePut(`icx/private/requests/${request.id}/${crypto.randomUUID()}-${safeName}`, bytes, input.mimeType);
+      await addServiceRequestDocument({ requestId: request.id, uploadToken: input.uploadToken, documentType: input.documentType, fileKey: stored.key, originalName: safeName, mimeType: input.mimeType, byteSize: bytes.byteLength });
+      return { success: true };
+    }),
   }),
   admin: router({
     metrics: staffProcedure.query(() => getAdminMetrics()),

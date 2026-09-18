@@ -4,6 +4,7 @@ import {
   applicationDocuments,
   applications,
   institutions,
+  serviceRequestDocuments,
   serviceRequests,
   type InsertUser,
   users,
@@ -144,6 +145,25 @@ export async function createServiceRequest(data: typeof serviceRequests.$inferIn
   if (!db) throw new Error("Database unavailable");
   await db.insert(serviceRequests).values(data);
   return { reference: data.reference };
+}
+
+export async function getServiceRequestByReference(reference: string, uploadToken: string) {
+  const db = await getDb();
+  if (!db) return undefined;
+  const result = await db.select().from(serviceRequests).where(and(eq(serviceRequests.reference, reference), eq(serviceRequests.uploadToken, uploadToken))).limit(1);
+  return result[0];
+}
+
+export async function addServiceRequestDocument(data: typeof serviceRequestDocuments.$inferInsert) {
+  const db = await getDb();
+  if (!db) throw new Error("Database unavailable");
+  await db.insert(serviceRequestDocuments).values(data);
+}
+
+export async function listDocumentsForServiceRequest(requestId: number, uploadToken: string) {
+  const db = await getDb();
+  if (!db) return [];
+  return db.select({ id: serviceRequestDocuments.id, documentType: serviceRequestDocuments.documentType, originalName: serviceRequestDocuments.originalName, mimeType: serviceRequestDocuments.mimeType, byteSize: serviceRequestDocuments.byteSize, validationStatus: serviceRequestDocuments.validationStatus, uploadedAt: serviceRequestDocuments.uploadedAt }).from(serviceRequestDocuments).where(and(eq(serviceRequestDocuments.requestId, requestId), eq(serviceRequestDocuments.uploadToken, uploadToken))).orderBy(desc(serviceRequestDocuments.uploadedAt));
 }
 
 export async function listServiceRequests() {

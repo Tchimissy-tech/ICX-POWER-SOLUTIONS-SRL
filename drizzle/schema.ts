@@ -153,6 +153,7 @@ export const serviceRequests = mysqlTable("serviceRequests", {
   status: mysqlEnum("status", requestStatuses).default("received").notNull(),
   requesterName: varchar("requesterName", { length: 180 }).notNull(),
   email: varchar("email", { length: 320 }).notNull(),
+  uploadToken: varchar("uploadToken", { length: 96 }).notNull(),
   organization: varchar("organization", { length: 180 }),
   country: varchar("country", { length: 120 }),
   payload: json("payload").$type<Record<string, unknown>>().notNull(),
@@ -160,6 +161,19 @@ export const serviceRequests = mysqlTable("serviceRequests", {
   internalNote: text("internalNote"),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
   updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export const serviceRequestDocuments = mysqlTable("serviceRequestDocuments", {
+  id: int("id").autoincrement().primaryKey(),
+  requestId: int("requestId").notNull(),
+  uploadToken: varchar("uploadToken", { length: 96 }).notNull(),
+  documentType: mysqlEnum("documentType", documentTypes).notNull(),
+  fileKey: varchar("fileKey", { length: 512 }).notNull(),
+  originalName: varchar("originalName", { length: 255 }).notNull(),
+  mimeType: varchar("mimeType", { length: 120 }).notNull(),
+  byteSize: int("byteSize").notNull(),
+  validationStatus: mysqlEnum("validationStatus", ["pending", "accepted", "rejected"]).default("pending").notNull(),
+  uploadedAt: timestamp("uploadedAt").defaultNow().notNull(),
 });
 
 export const auditLogs = mysqlTable("auditLogs", {
