@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 180" role="img" aria-labelledby="title desc">
+  <title id="title">ICX POWER SOLUTIONS SRL</title>
+  <desc id="desc">Logo officiel typographique ICX POWER SOLUTIONS SRL</desc>
+  <rect width="720" height="180" rx="28" fill="#07131f"/>
+  <circle cx="92" cy="90" r="53" fill="#d8a94a"/>
+  <path d="M67 72h50v14H82v8h28v12H82v8h35v14H67z" fill="#07131f"/>
+  <text x="178" y="83" fill="#fff" font-family="Arial, Helvetica, sans-serif" font-size="34" font-weight="700" letter-spacing="5">ICX POWER</text>
+  <text x="178" y="124" fill="#d8a94a" font-family="Arial, Helvetica, sans-serif" font-size="28" font-weight="700" letter-spacing="4">SOLUTIONS SRL</text>
+</svg>
