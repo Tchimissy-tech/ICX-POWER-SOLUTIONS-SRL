@@ -6,10 +6,11 @@ All website visual assets are stored below `client/public` and are therefore emi
 |---|---|---|
 | `/icx-power-solutions-logo.png` | Supplied archive | Header and footer identity |
 | `/k-marcel-traore.png` | Supplied archive | K Marcel TRAORE team profile |
+| `/jean-lansana-koundouno.jpg` | Supplied by the user | Jean Lansana KOUNDOUNO profile |
 | `/images/hero-global-team.jpg` | Locally bundled visual | Homepage hero |
 | `/images/study-guidance.jpg` | Locally bundled visual | Homepage study guidance section |
 | `/images/sourcing-logistics.jpg` | Locally bundled visual | Sourcing page hero |
 
 ## Jean Lansana KOUNDOUNO profile photo
 
-The submitted archive does **not** contain a photo for Jean Lansana KOUNDOUNO. Until that image is supplied, the website intentionally renders the `JLK` initials rather than a broken image. When the photo is received, save it as `client/public/images/jean-lansana-koundouno.jpg`, then set the `image` field of the Jean Lansana KOUNDOUNO entry in `client/src/lib/leaders.ts` to `/images/jean-lansana-koundouno.jpg`.
+The supplied photograph is bundled at `client/public/jean-lansana-koundouno.jpg` and the leader mapping now uses `/jean-lansana-koundouno.jpg`.
