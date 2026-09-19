@@ -1,5 +1,6 @@
 import { and, desc, eq, like, or, sql } from "drizzle-orm";
-import { drizzle } from "drizzle-orm/mysql2";
+import { drizzle } from "drizzle-orm/node-postgres";
+import { Pool } from "pg";
 import {
   applicationDocuments,
   applications,
@@ -12,11 +13,13 @@ import {
 import { ENV } from "./_core/env";
 
 let _db: ReturnType<typeof drizzle> | null = null;
+let _pool: Pool | null = null;
 
 export async function getDb() {
   if (!_db && process.env.DATABASE_URL) {
     try {
-      _db = drizzle(process.env.DATABASE_URL);
+      _pool = new Pool({ connectionString: process.env.DATABASE_URL, ssl: ENV.isProduction ? { rejectUnauthorized: false } : undefined });
+      _db = drizzle(_pool);
     } catch (error) {
       console.warn("[Database] Connection unavailable", error);
       _db = null;
@@ -46,7 +49,7 @@ export async function upsertUser(user: InsertUser): Promise<void> {
     updateSet.role = "super_admin";
   }
 
-  await db.insert(users).values(values).onDuplicateKeyUpdate({ set: updateSet });
+  await db.insert(users).values(values).onConflictDoUpdate({ target: users.openId, set: updateSet });
 }
 
 export async function getUserByOpenId(openId: string) {

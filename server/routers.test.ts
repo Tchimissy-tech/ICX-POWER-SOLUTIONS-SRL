@@ -36,4 +36,14 @@ describe("platform protection boundaries", () => {
       website: "bot-filled-value",
     })).rejects.toMatchObject({ code: "BAD_REQUEST" });
   });
+
+  it("returns an actionable error when form persistence is unavailable", async () => {
+    const caller = appRouter.createCaller(userContext());
+    await expect(caller.request.submit({
+      type: "contact",
+      requesterName: "Example Person",
+      email: "person@example.com",
+      payload: { message: "Database configuration audit" },
+    })).rejects.toMatchObject({ code: "PRECONDITION_FAILED", message: expect.stringContaining("DATABASE_URL") });
+  });
 });

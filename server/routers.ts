@@ -61,6 +61,18 @@ function cleanFilename(name: string) {
   return name.replace(/[^a-zA-Z0-9._-]/g, "_").replace(/_+/g, "_").slice(0, 180);
 }
 
+function formOperationError(error: unknown, operation: "submit" | "upload") {
+  const message = error instanceof Error ? error.message : String(error);
+  if (message.includes("Database unavailable")) {
+    return new TRPCError({ code: "PRECONDITION_FAILED", message: "Le stockage des demandes n’est pas configuré sur le serveur. Configurez DATABASE_URL dans Render." });
+  }
+  if (message.includes("Storage config missing") || message.includes("Storage presign") || message.includes("Storage upload")) {
+    return new TRPCError({ code: "PRECONDITION_FAILED", message: "Le stockage sécurisé des fichiers n’est pas configuré sur le serveur. Configurez BUILT_IN_FORGE_API_URL et BUILT_IN_FORGE_API_KEY dans Render." });
+  }
+  console.error(`[Forms] ${operation} failed`, error);
+  return new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: operation === "submit" ? "La demande n’a pas pu être enregistrée. Réessayez dans quelques instants." : "Le fichier n’a pas pu être téléversé. Vérifiez le fichier et réessayez." });
+}
+
 function createReference(prefix: string) {
   return `${prefix}-${new Date().getFullYear()}-${crypto.randomUUID().slice(0, 8).toUpperCase()}`;
 }
@@ -126,10 +138,10 @@ export const appRouter = router({
   submit: publicProcedure
       .input(z.object({
         type: z.enum(requestTypes),
-        requesterName: z.string().min(2).max(180),
-        email: z.string().email().max(320),
-        organization: z.string().max(180).optional(),
-        country: z.string().max(120).optional(),
+        requesterName: z.string().trim().min(2).max(180),
+        email: z.string().trim().email().max(320),
+        organization: z.string().trim().max(180).optional(),
+        country: z.string().trim().max(120).optional(),
         payload: z.record(z.string(), z.unknown()),
         website: z.string().max(0).optional(), // honeypot: should stay empty
       }))
@@ -137,8 +149,12 @@ export const appRouter = router({
         if (input.website) throw new TRPCError({ code: "BAD_REQUEST" });
         const { website: _website, ...request } = input;
         const uploadToken = crypto.randomUUID() + crypto.randomUUID();
-        const created = await createServiceRequest({ ...request, uploadToken, reference: createReference("REQ"), status: "received" });
-        return { ...created, uploadToken };
+        try {
+          const created = await createServiceRequest({ ...request, uploadToken, reference: createReference("REQ"), status: "received" });
+          return { ...created, uploadToken };
+        } catch (error) {
+          throw formOperationError(error, "submit");
+        }
       }),
     documents: publicProcedure.input(z.object({ reference: z.string().regex(/^REQ-\d{4}-[A-Z0-9-]+$/), uploadToken: z.string().min(32).max(96) })).query(async ({ input }) => {
       const request = await getServiceRequestByReference(input.reference, input.uploadToken);
@@ -151,9 +167,13 @@ export const appRouter = router({
       const raw = input.base64Content.includes(",") ? input.base64Content.split(",")[1] : input.base64Content;
       const bytes = Buffer.from(raw, "base64"); validateFile(bytes, input.mimeType);
       const safeName = cleanFilename(input.fileName);
-      const stored = await storagePut(`icx/private/requests/${request.id}/${crypto.randomUUID()}-${safeName}`, bytes, input.mimeType);
-      await addServiceRequestDocument({ requestId: request.id, uploadToken: input.uploadToken, documentType: input.documentType, fileKey: stored.key, originalName: safeName, mimeType: input.mimeType, byteSize: bytes.byteLength });
-      return { success: true };
+      try {
+        const stored = await storagePut(`icx/private/requests/${request.id}/${crypto.randomUUID()}-${safeName}`, bytes, input.mimeType);
+        await addServiceRequestDocument({ requestId: request.id, uploadToken: input.uploadToken, documentType: input.documentType, fileKey: stored.key, originalName: safeName, mimeType: input.mimeType, byteSize: bytes.byteLength });
+        return { success: true };
+      } catch (error) {
+        throw formOperationError(error, "upload");
+      }
     }),
   }),
   admin: router({
