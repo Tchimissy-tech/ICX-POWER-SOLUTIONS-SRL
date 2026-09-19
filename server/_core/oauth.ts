@@ -1,8 +1,10 @@
-import { COOKIE_NAME, ONE_YEAR_MS, OAUTH_STATE_COOKIE, decodeOAuthState } from "@shared/const";
+import { COOKIE_NAME, ONE_YEAR_MS, OAUTH_STATE_COOKIE, OAUTH_STATE_FALLBACK_COOKIE, decodeOAuthState } from "@shared/const";
 import { parse as parseCookieHeader } from "cookie";
+import { randomUUID } from "crypto";
 import type { Express, Request, Response } from "express";
 import * as db from "../db";
 import { getSessionCookieOptions } from "./cookies";
+import { ENV } from "./env";
 import { sdk } from "./sdk";
 
 function getQueryParam(req: Request, key: string): string | undefined {
@@ -10,7 +12,43 @@ function getQueryParam(req: Request, key: string): string | undefined {
   return typeof value === "string" ? value : undefined;
 }
 
+function getRequestOrigin(req: Request): { origin: string; secure: boolean } {
+  const forwardedProto = req.headers["x-forwarded-proto"];
+  const protocol = (Array.isArray(forwardedProto) ? forwardedProto[0] : forwardedProto?.split(",")[0])?.trim() || req.protocol;
+  const host = req.headers["x-forwarded-host"] || req.headers.host;
+  const hostname = Array.isArray(host) ? host[0] : host;
+  const secure = protocol === "https";
+  return { origin: `${secure ? "https" : "http"}://${hostname}`, secure };
+}
+
 export function registerOAuthRoutes(app: Express) {
+  app.get("/api/oauth/start", (req: Request, res: Response) => {
+    const action = getQueryParam(req, "type") === "signUp" ? "signUp" : "signIn";
+    if (!ENV.appId || !ENV.oAuthServerUrl) {
+      res.status(503).json({ error: "OAuth is not configured. Set VITE_APP_ID and OAUTH_SERVER_URL." });
+      return;
+    }
+
+    const { origin, secure } = getRequestOrigin(req);
+    const redirectUri = `${origin}/api/oauth/callback`;
+    const nonce = randomUUID();
+    const state = Buffer.from(JSON.stringify({ redirectUri, nonce }), "utf8").toString("base64");
+    const cookieName = secure ? OAUTH_STATE_COOKIE : OAUTH_STATE_FALLBACK_COOKIE;
+    res.cookie(cookieName, nonce, {
+      httpOnly: true,
+      path: "/",
+      maxAge: 10 * 60 * 1000,
+      sameSite: "lax",
+      secure,
+    });
+    const portal = new URL(`${ENV.oAuthPortalUrl}/app-auth`);
+    portal.searchParams.set("appId", ENV.appId);
+    portal.searchParams.set("redirectUri", redirectUri);
+    portal.searchParams.set("state", state);
+    portal.searchParams.set("type", action);
+    res.redirect(302, portal.toString());
+  });
+
   app.get("/api/oauth/callback", async (req: Request, res: Response) => {
     const code = getQueryParam(req, "code");
     const state = getQueryParam(req, "state");
@@ -24,12 +62,14 @@ export function registerOAuthRoutes(app: Express) {
     // startLogin set in the browser that began this login. An attacker can
     // forge `state`, but cannot plant this cookie in the victim's browser.
     const { nonce } = decodeOAuthState(state);
-    const expectedNonce = parseCookieHeader(req.headers.cookie ?? "")[OAUTH_STATE_COOKIE];
+    const parsedCookies = parseCookieHeader(req.headers.cookie ?? "");
+    const expectedNonce = parsedCookies[OAUTH_STATE_COOKIE] ?? parsedCookies[OAUTH_STATE_FALLBACK_COOKIE];
     if (!nonce || nonce !== expectedNonce) {
       res.status(403).json({ error: "invalid oauth state" });
       return;
     }
-    res.clearCookie(OAUTH_STATE_COOKIE, { path: "/", secure: true, sameSite: "none" });
+    res.clearCookie(OAUTH_STATE_COOKIE, { path: "/", secure: true, sameSite: "lax" });
+    res.clearCookie(OAUTH_STATE_FALLBACK_COOKIE, { path: "/", secure: false, sameSite: "lax" });
 
     try {
       const tokenResponse = await sdk.exchangeCodeForToken(code, state);

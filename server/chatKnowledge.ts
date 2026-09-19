@@ -1,4 +1,4 @@
-export type SourceAuthority = "official" | "partner" | "icx";
+export type SourceAuthority = "official" | "partner" | "public" | "icx";
 
 export type ChatSource = {
   id: string;
@@ -70,10 +70,10 @@ const sources: ChatSource[] = [
   },
   {
     id: "onrc-romania",
-    title: "ONRC — Registre national du commerce roumain",
-    url: "https://www.onrc.ro/",
+    title: "ONRC — institution publique et registre national du commerce",
+    url: "https://www.onrc.ro/index.php/ro/",
     authority: "official",
-    summary: "L’ONRC est la source officielle à privilégier pour vérifier une inscription au registre du commerce roumain. Le site ICX affiche les références suivantes : CUI 54675848, registre J2026031336000, EUID ROONRC.J2026031336000, siège à Iași et CAEN 7020 ; elles doivent être revalidées auprès de l’ONRC avant tout usage juridique.",
+    summary: "L’ONRC est une institution publique roumaine sous l’autorité du ministère de la Justice et la source officielle à privilégier pour vérifier une inscription au registre du commerce. Il n’est pas un partenaire ICX. Les références ICX doivent être revalidées auprès de l’ONRC avant tout usage juridique.",
     keywords: ["onrc", "registre", "commerce", "cui", "cif", "euid", "societe", "entreprise", "legal", "juridique", "enregistrement", "iași", "iasi", "caen"],
   },
   {
@@ -86,18 +86,18 @@ const sources: ChatSource[] = [
   },
   {
     id: "aaft",
-    title: "AAFT Association — site de l’association",
-    url: "https://aaft.com/",
-    authority: "partner",
-    summary: "AAFT est référencée par ICX comme association créée en Roumanie par Jean Lansana KOUNDOUNO et K Marcel TRAORE. Elle n’est pas une université et aucun partenariat ICX n’est présumé sans confirmation explicite.",
-    keywords: ["aaft", "association", "jean lansana", "koundouno", "marcel traore", "traore"],
+    title: "AAFT — Asociația Africanilor pentru Fericirea Tuturor",
+    url: "https://www.instagram.com/aaft.ro/",
+    authority: "public",
+    summary: "AAFT est une association roumaine orientée vers la promotion de la culture, de la danse, des arts, du sport et des échanges. Elle ne doit pas être présentée comme une université. Les références publiques accessibles de l’association sont sociales ; le site aaft.com décrit une institution éducative indienne différente. Aucun partenariat ICX n’est confirmé.",
+    keywords: ["aaft", "association", "asociatia africanilor", "africanilor", "jean lansana", "koundouno", "marcel traore", "traore"],
   },
   {
     id: "ubb",
-    title: "Babeș-Bolyai University — admissions internationales",
-    url: "https://infoadmitere.ubbcluj.ro/en/",
+    title: "Babeș-Bolyai University — présentation officielle",
+    url: "https://www.ubbcluj.ro/en/despre/prezentare/",
     authority: "official",
-    summary: "Babeș-Bolyai University est une institution référencée par ICX afin d’orienter les candidats vers ses informations officielles pour les étudiants internationaux. Les programmes, conditions et calendriers doivent être contrôlés sur son site d’admission officiel avant toute candidature.",
+    summary: "Babeș-Bolyai University est une université publique roumaine et une institution de recherche. Elle est référencée par ICX pour orienter les candidats vers ses informations officielles ; aucun partenariat ICX n’est confirmé. Les programmes, conditions et calendriers doivent être contrôlés sur le site officiel avant toute candidature.",
     keywords: ["babes", "bolyai", "ubb", "cluj", "napoca"],
   },
   {
@@ -174,7 +174,7 @@ const sources: ChatSource[] = [
   },
 ];
 
-const authorityWeight: Record<SourceAuthority, number> = { official: 3, partner: 2, icx: 1 };
+const authorityWeight: Record<SourceAuthority, number> = { official: 3, public: 2, partner: 2, icx: 1 };
 const normalize = (value: string) => value.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
 
 export function selectChatSources(question: string): ChatSource[] {

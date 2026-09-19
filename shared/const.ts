@@ -9,6 +9,9 @@ export const NOT_ADMIN_ERR_MSG = 'You do not have required permission (10002)';
 // Domain), so a sibling *.manus.space site cannot plant a matching value in a
 // victim's browser.
 export const OAUTH_STATE_COOKIE = "__Host-oauth_state";
+// Fallback for local HTTP or hosts where a Secure __Host- cookie cannot be set.
+// The server accepts both names but always prefers the secure cookie.
+export const OAUTH_STATE_FALLBACK_COOKIE = "icx-oauth_state";
 
 // `state` carries the callback redirect URI (used at token exchange) plus the
 // CSRF nonce. Defined here so the client encoder and server decoder never drift.

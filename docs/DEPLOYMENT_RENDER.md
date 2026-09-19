@@ -23,6 +23,10 @@ Set the following secrets in Render’s encrypted environment interface. Values 
 
 For a non-Manus OAuth provider, replace the auth integration deliberately; do not expose provider secrets in Vite variables.
 
+### OAuth redirect configuration
+
+Sign-in and account creation now start at the server route `/api/oauth/start`. The server builds the redirect URI from the public Render host, creates the one-time state nonce cookie, and then redirects to the OAuth portal. This keeps the application ID and state handling out of the browser bundle and works behind Render’s HTTPS proxy. Register the exact production callback URL `https://YOUR_RENDER_HOST/api/oauth/callback` in the OAuth application; also register the custom-domain variant when a custom domain is attached. `VITE_APP_ID`, `OAUTH_SERVER_URL`, `VITE_OAUTH_PORTAL_URL`, and `JWT_SECRET` must be set in Render. The route returns a clear 503 configuration error instead of sending users to a broken login URL when the application ID is missing.
+
 ### Source-grounded assistant
 
 The ICX assistant runs entirely server-side. It receives the current visitor question, selects only the relevant entries from the reviewed source registry in `server/chatKnowledge.ts`, and displays those references under its answer. The registry distinguishes **ICX pages**, **official authorities or institutions**, and **partner reference sites**. It never treats a public reference link as confirmation of an ICX partnership.

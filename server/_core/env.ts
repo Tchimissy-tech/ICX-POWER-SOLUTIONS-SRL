@@ -4,6 +4,7 @@ export const ENV = {
   databaseUrl: process.env.DATABASE_URL ?? "",
   // Manus WebDev's public OAuth API endpoint. Render may override this explicitly.
   oAuthServerUrl: process.env.OAUTH_SERVER_URL || "https://api.manus.im",
+  oAuthPortalUrl: process.env.VITE_OAUTH_PORTAL_URL || "https://manus.im",
   ownerOpenId: process.env.OWNER_OPEN_ID ?? "",
   isProduction: process.env.NODE_ENV === "production",
   forgeApiUrl: process.env.BUILT_IN_FORGE_API_URL ?? "",
