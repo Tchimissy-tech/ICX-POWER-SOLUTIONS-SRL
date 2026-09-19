@@ -25,7 +25,7 @@ For a non-Manus OAuth provider, replace the auth integration deliberately; do no
 
 ### OAuth redirect configuration
 
-Sign-in and account creation now start at the server route `/api/oauth/start`. The server builds the redirect URI from the public Render host, creates the one-time state nonce cookie, and then redirects to the OAuth portal. This keeps the application ID and state handling out of the browser bundle and works behind Render’s HTTPS proxy. Register the exact production callback URL `https://YOUR_RENDER_HOST/api/oauth/callback` in the OAuth application; also register the custom-domain variant when a custom domain is attached. `VITE_APP_ID`, `OAUTH_SERVER_URL`, `VITE_OAUTH_PORTAL_URL`, and `JWT_SECRET` must be set in Render. The route returns a clear 503 configuration error instead of sending users to a broken login URL when the application ID is missing.
+Sign-in and account creation now start at the server route `/api/oauth/start`. The server builds the redirect URI from the public Render host, creates the one-time state nonce cookie, and then redirects to the OAuth portal. This keeps the application ID and state handling out of the browser bundle and works behind Render’s HTTPS proxy. Register the exact production callback URL `https://YOUR_RENDER_HOST/api/oauth/callback` in the OAuth application; also register the custom-domain variant when a custom domain is attached. `VITE_APP_ID`, `OAUTH_SERVER_URL`, `VITE_OAUTH_PORTAL_URL`, and `JWT_SECRET` must be set in Render. If the application ID is missing, the route redirects to the homepage with a localized explanation instead of exposing a raw JSON error. This fallback is only a safe error display; real authentication still requires the real OAuth app ID.
 
 ### Source-grounded assistant
 

@@ -25,7 +25,10 @@ export function registerOAuthRoutes(app: Express) {
   app.get("/api/oauth/start", (req: Request, res: Response) => {
     const action = getQueryParam(req, "type") === "signUp" ? "signUp" : "signIn";
     if (!ENV.appId || !ENV.oAuthServerUrl) {
-      res.status(503).json({ error: "OAuth is not configured. Set VITE_APP_ID and OAUTH_SERVER_URL." });
+      // Never expose a raw JSON/configuration error to public visitors. The
+      // deployment still needs the real OAuth app ID, but the site remains
+      // navigable and can explain the issue in the visitor's language.
+      res.redirect(302, `/?auth=not-configured&action=${action}`);
       return;
     }
 
