@@ -17,4 +17,8 @@ All website visual assets are stored below `client/public` and are therefore emi
 
 The supplied photograph is bundled at `client/public/jean-lansana-koundouno.jpg` and the leader mapping now uses `/jean-lansana-koundouno.jpg`.
 
-The work and partnership image files are copied into `client/public/images` so Vite emits them into the production bundle and Render serves them locally. Visible credits and watermarks have been retained where present. Search-result sources used for the illustrative set include GlobalWorker/Working in Romania, Alamy, InterMann, the Embassy of Moldova in the United Kingdom, and Expertise France.
+The work and partnership image files are copied into `client/public/images` so Vite emits them into the production bundle and Render serves them locally.
+
+## Original activity-specific visual set
+
+The `expertise-*`, `consulting-*`, `partnership-*`, `affiliations-network.jpg` and `official-sources.jpg` assets were generated specifically for this project. They are local, activity-specific visuals with no embedded photographer credit, watermark or readable text. Each tab or sector card uses its own image rather than reusing an unrelated generic photograph.

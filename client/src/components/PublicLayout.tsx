@@ -11,13 +11,13 @@ import { startLogin, startSignup } from "@/const";
 import { toast } from "sonner";
 import FloatingAssistant from "@/components/FloatingAssistant";
 
-const nav = [["home", "/"], ["study", "/study"], ["universities", "/universities"], ["services", "/services"], ["workPermits", "/work-permits"], ["partners", "/partners"]] as const;
+const nav = [["home", "/"], ["study", "/study"], ["universities", "/universities"], ["services", "/services"], ["workPermits", "/work-permits"], ["partners", "/partners"], ["affiliations", "/affiliations"]] as const;
 const strategicNav = { fr: { expertise: "Expertise internationale", consulting: "Consulting", partnerships: "Partenariats stratégiques" }, en: { expertise: "International expertise", consulting: "Consulting", partnerships: "Strategic partnerships" }, ro: { expertise: "Expertiză internațională", consulting: "Consultanță", partnerships: "Parteneriate strategice" }, pt: { expertise: "Expertise internacional", consulting: "Consultoria", partnerships: "Parcerias estratégicas" }, ar: { expertise: "الخبرة الدولية", consulting: "الاستشارات", partnerships: "الشراكات الاستراتيجية" } } as const;
 export default function PublicLayout({ children }: { children: React.ReactNode }) {
   const [location] = useLocation();
   const [open, setOpen] = useState(false); const [showBackToTop, setShowBackToTop] = useState(false);
   const { theme, toggleTheme } = useTheme(); const { isAuthenticated } = useAuth(); const { locale, setLocale, t } = useLocale();
-  const projectLinks = [[strategicNav[locale].expertise, "/expertise-internationale"], [strategicNav[locale].consulting, "/consulting"], [t.layout.projectStudy, "/study"], [t.layout.projectWork, "/work-permits/contact"], [t.layout.projectSourcing, "/sourcing"], [strategicNav[locale].partnerships, "/partnerships-strategiques"], [t.layout.projectPartnership, "/partnership"]] as const;
+  const projectLinks = [[strategicNav[locale].expertise, "/expertise-internationale"], [strategicNav[locale].consulting, "/consulting"], [t.layout.projectStudy, "/study"], [t.layout.projectWork, "/work-permits/contact"], [t.layout.projectSourcing, "/sourcing"], [strategicNav[locale].partnerships, "/partnerships-strategiques"], [locale === "fr" ? "Affiliations" : "Affiliations", "/affiliations"], [t.layout.projectPartnership, "/partnership"]] as const;
   useEffect(() => { const onScroll = () => setShowBackToTop(window.scrollY > 480); window.addEventListener("scroll", onScroll, { passive: true }); onScroll(); return () => window.removeEventListener("scroll", onScroll); }, []);
   useEffect(() => { window.scrollTo({ top: 0, left: 0, behavior: "auto" }); }, [location]);
   useEffect(() => { const onAuthError = () => toast.error(locale === "fr" ? "La connexion n’est pas configurée sur cet environnement. Contactez l’administrateur du site." : "Sign-in is not configured for this environment. Please contact the site administrator."); window.addEventListener("icx-auth-config-error", onAuthError); return () => window.removeEventListener("icx-auth-config-error", onAuthError); }, [locale]);
