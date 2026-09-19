@@ -6,9 +6,8 @@ services:
     branch: main
     region: oregon
     plan: free
-    buildCommand: pnpm install --frozen-lockfile && pnpm build
+    buildCommand: pnpm install --frozen-lockfile && pnpm drizzle-kit migrate && pnpm build
     startCommand: pnpm start
-    preDeployCommand: pnpm drizzle-kit migrate
     healthCheckPath: /
     autoDeployTrigger: commit
     envVars:
