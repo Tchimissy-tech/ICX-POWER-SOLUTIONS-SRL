@@ -69,8 +69,6 @@ export type InvokeParams = {
   model?: string;
   thinking?: Record<string, unknown>;
   reasoning?: Record<string, unknown>;
-  timeoutMs?: number;
-  maxRetries?: number;
 };
 
 export type ToolCall = {
@@ -303,15 +301,14 @@ const computeBackoffDelay = (
 // returns the final Response so callers keep their existing error handling.
 const fetchWithBackoff = async (
   url: string,
-  init: FetchInit,
-  maxRetries = RETRY_MAX_RETRIES
+  init: FetchInit
 ): Promise<Response> => {
   let lastError: unknown;
 
-  for (let attempt = 0; attempt <= maxRetries; attempt++) {
+  for (let attempt = 0; attempt <= RETRY_MAX_RETRIES; attempt++) {
     try {
       const response = await fetch(url, init);
-      if (response.ok || attempt === maxRetries) {
+      if (response.ok || attempt === RETRY_MAX_RETRIES) {
         return response;
       }
 
@@ -329,9 +326,9 @@ const fetchWithBackoff = async (
       await sleep(computeBackoffDelay(attempt, retryAfterMs));
     } catch (error) {
       lastError = error;
-      if (init.signal?.aborted || attempt === maxRetries) throw error;
+      if (attempt === RETRY_MAX_RETRIES) throw error;
       console.warn(
-        `LLM request retry ${attempt + 1}/${maxRetries} after network error`
+        `LLM request retry ${attempt + 1}/${RETRY_MAX_RETRIES} after network error`
       );
       await sleep(computeBackoffDelay(attempt));
     }
@@ -359,8 +356,6 @@ export async function invokeLLM(params: InvokeParams): Promise<InvokeResult> {
     reasoning,
     maxTokens,
     max_tokens,
-    timeoutMs,
-    maxRetries,
   } = params;
 
   const payload: Record<string, unknown> = {
@@ -413,8 +408,7 @@ export async function invokeLLM(params: InvokeParams): Promise<InvokeResult> {
       authorization: `Bearer ${ENV.forgeApiKey}`,
     },
     body: JSON.stringify(payload),
-    signal: typeof timeoutMs === "number" ? AbortSignal.timeout(timeoutMs) : undefined,
-  }, maxRetries);
+  });
 
   if (!response.ok) {
     const errorText = await response.text();

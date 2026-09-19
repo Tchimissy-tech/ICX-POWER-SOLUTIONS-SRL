@@ -17,6 +17,13 @@ const requireUser = t.middleware(async opts => {
     throw new TRPCError({ code: "UNAUTHORIZED", message: UNAUTHED_ERR_MSG });
   }
 
+  if (ctx.user.accountStatus !== "approved" && ctx.user.role !== "super_admin") {
+    throw new TRPCError({
+      code: "FORBIDDEN",
+      message: "Votre compte est en attente d'approbation par l'administration ICX.",
+    });
+  }
+
   return next({
     ctx: {
       ...ctx,

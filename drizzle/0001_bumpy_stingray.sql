@@ -1,3 +1,16 @@
+CREATE TABLE `actionTokens` (
+	`id` int AUTO_INCREMENT NOT NULL,
+	`token` varchar(128) NOT NULL,
+	`actionType` varchar(64) NOT NULL,
+	`targetId` int NOT NULL,
+	`metadata` json,
+	`expiresAt` timestamp NOT NULL,
+	`usedAt` timestamp,
+	`createdAt` timestamp NOT NULL DEFAULT (now()),
+	CONSTRAINT `actionTokens_id` PRIMARY KEY(`id`),
+	CONSTRAINT `actionTokens_token_unique` UNIQUE(`token`)
+);
+--> statement-breakpoint
 CREATE TABLE `applicationDocuments` (
 	`id` int AUTO_INCREMENT NOT NULL,
 	`applicationId` int NOT NULL,
@@ -81,6 +94,20 @@ CREATE TABLE `programmes` (
 	CONSTRAINT `programmes_id` PRIMARY KEY(`id`)
 );
 --> statement-breakpoint
+CREATE TABLE `serviceRequestDocuments` (
+	`id` int AUTO_INCREMENT NOT NULL,
+	`requestId` int NOT NULL,
+	`uploadToken` varchar(96) NOT NULL,
+	`documentType` enum('passport','national_id','diploma','transcript','cv','motivation_letter','photo','language_certificate','financial_proof','recommendation_letter','other') NOT NULL,
+	`fileKey` varchar(512) NOT NULL,
+	`originalName` varchar(255) NOT NULL,
+	`mimeType` varchar(120) NOT NULL,
+	`byteSize` int NOT NULL,
+	`validationStatus` enum('pending','accepted','rejected') NOT NULL DEFAULT 'pending',
+	`uploadedAt` timestamp NOT NULL DEFAULT (now()),
+	CONSTRAINT `serviceRequestDocuments_id` PRIMARY KEY(`id`)
+);
+--> statement-breakpoint
 CREATE TABLE `serviceRequests` (
 	`id` int AUTO_INCREMENT NOT NULL,
 	`reference` varchar(32) NOT NULL,
@@ -88,6 +115,7 @@ CREATE TABLE `serviceRequests` (
 	`status` enum('received','analysis','in_progress','waiting','closed') NOT NULL DEFAULT 'received',
 	`requesterName` varchar(180) NOT NULL,
 	`email` varchar(320) NOT NULL,
+	`uploadToken` varchar(96) NOT NULL,
 	`organization` varchar(180),
 	`country` varchar(120),
 	`payload` json NOT NULL,
@@ -99,4 +127,5 @@ CREATE TABLE `serviceRequests` (
 	CONSTRAINT `serviceRequests_reference_unique` UNIQUE(`reference`)
 );
 --> statement-breakpoint
-ALTER TABLE `users` MODIFY COLUMN `role` enum('user','admin','super_admin','administrator','admissions_manager','sourcing_manager','real_estate_manager','partnership_manager','editor','agent') NOT NULL DEFAULT 'user';
+ALTER TABLE `users` MODIFY COLUMN `role` enum('user','admin','super_admin','administrator','admissions_manager','sourcing_manager','real_estate_manager','partnership_manager','editor','agent') NOT NULL DEFAULT 'user';--> statement-breakpoint
+ALTER TABLE `users` ADD `accountStatus` enum('pending','approved','rejected') DEFAULT 'pending' NOT NULL;

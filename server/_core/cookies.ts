@@ -46,7 +46,3 @@ export function getSessionCookieOptions(
     secure: isSecureRequest(req),
   };
 }
-
-export function getLocalSessionCookieOptions(req: Request) {
-  return { ...getSessionCookieOptions(req), sameSite: "lax" as const };
-}
