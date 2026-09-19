@@ -25,9 +25,11 @@ import {
   updateUserAccountStatus,
 } from "./db";
 import { COOKIE_NAME } from "@shared/const";
-import { getSessionCookieOptions } from "./_core/cookies";
+import { getLocalSessionCookieOptions, getSessionCookieOptions } from "./_core/cookies";
+import { sdk } from "./_core/sdk";
 import { systemRouter } from "./_core/systemRouter";
 import { protectedProcedure, publicProcedure, router } from "./_core/trpc";
+import { authenticateLocalUser, issueHumanChallenge, registerLocalUser } from "./localAuth";
 import { storageGetSignedUrl, storagePut } from "./storage";
 import { invokeLLM } from "./_core/llm";
 import { chatSourcePolicy, formatLiveSourcesForPrompt, formatSourcesForPrompt, localizedSourceFallback, publicSources, selectChatSources } from "./chatKnowledge";
@@ -80,7 +82,35 @@ function createReference(prefix: string) {
 export const appRouter = router({
   system: systemRouter,
   auth: router({
-    me: publicProcedure.query((opts) => opts.ctx.user),
+    me: publicProcedure.query(({ ctx }) => {
+      if (!ctx.user) return null;
+      const { passwordHash: _passwordHash, ...safeUser } = ctx.user;
+      return safeUser;
+    }),
+    localChallenge: publicProcedure.query(({ ctx }) => issueHumanChallenge(ctx.req)),
+    localRegister: publicProcedure.input(z.object({
+      name: z.string().trim().min(2).max(180),
+      email: z.string().trim().email().max(320),
+      password: z.string().min(12).max(128).regex(/[a-z]/).regex(/[A-Z]/).regex(/[0-9]/).regex(/[^A-Za-z0-9]/),
+      challengeId: z.string().uuid(),
+      challengeAnswer: z.string().trim().min(1).max(10),
+    })).mutation(async ({ ctx, input }) => {
+      const user = await registerLocalUser(ctx.req, input.email, input.password, input.name, input.challengeId, input.challengeAnswer);
+      const token = await sdk.signSession({ openId: user.openId, appId: "icx-local", name: user.name ?? input.email });
+      ctx.res.cookie(COOKIE_NAME, token, getLocalSessionCookieOptions(ctx.req));
+      return { success: true } as const;
+    }),
+    localLogin: publicProcedure.input(z.object({
+      email: z.string().trim().email().max(320),
+      password: z.string().min(1).max(128),
+      challengeId: z.string().uuid(),
+      challengeAnswer: z.string().trim().min(1).max(10),
+    })).mutation(async ({ ctx, input }) => {
+      const user = await authenticateLocalUser(ctx.req, input.email, input.password, input.challengeId, input.challengeAnswer);
+      const token = await sdk.signSession({ openId: user.openId, appId: "icx-local", name: user.name ?? input.email });
+      ctx.res.cookie(COOKIE_NAME, token, getLocalSessionCookieOptions(ctx.req));
+      return { success: true } as const;
+    }),
     logout: publicProcedure.mutation(({ ctx }) => {
       ctx.res.clearCookie(COOKIE_NAME, { ...getSessionCookieOptions(ctx.req), maxAge: -1 });
       return { success: true } as const;

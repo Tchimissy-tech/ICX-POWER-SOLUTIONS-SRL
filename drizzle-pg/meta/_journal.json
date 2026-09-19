@@ -8,6 +8,20 @@
       "when": 1789828225314,
       "tag": "0000_amusing_madripoor",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1789833862993,
+      "tag": "0001_big_groot",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1789833965819,
+      "tag": "0002_illegal_william_stryker",
+      "breakpoints": true
     }
   ]
 }
