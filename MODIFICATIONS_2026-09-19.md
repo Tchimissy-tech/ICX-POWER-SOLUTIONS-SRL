@@ -35,3 +35,17 @@ Le module de chat a été remplacé par `client/src/components/FloatingAssistant
 Le serveur renvoie désormais des réponses dans les cinq langues du site, avec un ton plus naturel et une prochaine étape concrète. Le comportement de secours affiche les coordonnées ICX lorsque l’API IA ne répond pas, au lieu de laisser le demandeur sans indication.
 
 La typographie éditoriale des titres utilise désormais une police serif complémentaire. Le pied de page explique clairement qu’une première orientation automatique est suivie par une personne de l’équipe ICX pour les décisions importantes. Les routes publiques et la production ont été vérifiées après compilation.
+
+## Repositionnement stratégique — expertise, consulting et alliances internationales
+
+La page d’accueil positionne désormais ICX POWER SOLUTIONS SRL comme une plateforme dédiée à l’expertise internationale, au consulting, au sourcing et aux études à l’étranger, par le conseil et l’orientation.
+
+Trois parcours visuels sont mis en avant dès l’accueil : `/expertise-internationale`, `/consulting` et `/partnerships-strategiques`. Chaque parcours possède une architecture indépendante, des onglets interactifs et des appels à l’action vers l’équipe ICX.
+
+La page Expertise internationale structure les sujets suivants : intelligence de marché, implantation internationale, mines et ressources naturelles, partenariats stratégiques, énergie et financement. La page Consulting structure les disciplines suivantes : stratégie et marché, opérations et organisation, start-up et innovation, énergie et financement, gouvernance et coopération. La page Partenariats stratégiques couvre les secteurs miniers, les ressources naturelles, les start-up, l’énergie, l’agro-industrie, les institutions, le commerce et l’implantation, avec une couverture Europe, États-Unis et Afrique.
+
+Les visuels utilisent les images déjà regroupées dans `client/public/images`, servies localement par Render sans dépendance à des URLs externes. Les routes ont été enregistrées dans `App.tsx` et ajoutées à la navigation principale ainsi qu’au lanceur de projet.
+
+## Correction du chat
+
+Le endpoint `ai.chat` traite désormais les réponses texte et les réponses multi-parties renvoyées par le modèle. Il capture les erreurs de configuration ou de disponibilité de l’API et renvoie une réponse de relais humain avec les coordonnées ICX au lieu de laisser l’utilisateur sans réponse. Le prompt couvre désormais l’expertise internationale, le consulting, les mines, les ressources naturelles, les start-up, l’énergie et le financement. La page `/chat` présente le nouveau module flottant et ne réutilise plus l’ancien écran de chat qui pouvait sembler inactif.

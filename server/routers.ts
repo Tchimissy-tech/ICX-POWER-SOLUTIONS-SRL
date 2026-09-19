@@ -171,8 +171,20 @@ export const appRouter = router({
   ai: router({
     chat: publicProcedure.input(z.object({ messages: z.array(z.object({ role: z.enum(["user", "assistant"]), content: z.string().min(1).max(4000) })).max(12), locale: z.string().max(8).default("fr") })).mutation(async ({ input }) => {
       const language = ({ fr: "français", en: "anglais", ro: "roumain", pt: "portugais", ar: "arabe" } as Record<string, string>)[input.locale] ?? "français";
-      const response = await invokeLLM({ model: "gpt-5-mini", maxTokens: 900, messages: [{ role: "system", content: `Tu es l’assistant d’orientation humain et chaleureux d’ICX POWER SOLUTIONS SRL. Réponds en ${language}, avec des phrases naturelles, concrètes et courtes. Commence par répondre directement, puis propose une prochaine étape. Si la question est ambiguë, pose une seule question de précision. Donne uniquement des informations générales sur les études, permis de travail, partenariats, sourcing et demandes ICX. Ne promets jamais un emploi, un permis, une admission ou un partenariat. Pour une décision, un tarif, un contrat ou une validation de dossier, renvoie vers les responsables humains. Indique les contacts si pertinent : icxps.sale@outlook.com, représentant légal +40 745 437 748, opérations et coordination +40 753 413 765.` }, ...input.messages] });
-      return typeof response.choices[0]?.message.content === "string" && response.choices[0].message.content.trim() ? response.choices[0].message.content : "Je vous invite à contacter directement un responsable ICX pour une réponse personnalisée.";
+      const fallback = input.locale === "fr" ? "Merci pour votre question. Je peux vous orienter sur l’expertise internationale, le consulting, le sourcing, les études, les partenariats miniers, les start-up ou l’énergie. Pour une réponse personnalisée, écrivez à icxps.sale@outlook.com ou appelez le +40 745 437 748." : "Thank you for your question. I can guide you on international expertise, consulting, sourcing, study, mining partnerships, start-ups or energy. For a personalised answer, email icxps.sale@outlook.com or call +40 745 437 748.";
+      try {
+        const response = await invokeLLM({ model: "gpt-5-mini", maxTokens: 900, messages: [{ role: "system", content: `Tu es l’assistant d’orientation humain et chaleureux d’ICX POWER SOLUTIONS SRL. Réponds en ${language}, avec des phrases naturelles, concrètes et courtes. Commence par répondre directement, puis propose une prochaine étape. Si la question est ambiguë, pose une seule question de précision. Donne uniquement des informations générales sur l’expertise internationale, le consulting, les études, permis de travail, partenariats, sourcing, start-up, mines, ressources naturelles, énergie et financement. Ne promets jamais un emploi, un permis, une admission, un financement ou un partenariat. Pour une décision, un tarif, un contrat ou une validation de dossier, renvoie vers les responsables humains. Indique les contacts si pertinent : icxps.sale@outlook.com, représentant légal +40 745 437 748, opérations et coordination +40 753 413 765.` }, ...input.messages] });
+        const content = response.choices[0]?.message.content;
+        if (typeof content === "string" && content.trim()) return content;
+        if (Array.isArray(content)) {
+          const text = content.filter((part): part is { type: "text"; text: string } => part.type === "text").map((part) => part.text).join("\n").trim();
+          if (text) return text;
+        }
+        return fallback;
+      } catch (error) {
+        console.warn("[AI chat] Falling back to human handoff:", error instanceof Error ? error.message : error);
+        return fallback;
+      }
     }),
   }),
 });
