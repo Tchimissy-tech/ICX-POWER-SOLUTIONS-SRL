@@ -19,6 +19,10 @@ const challenges = new Map<string, { answer: string; ip: string; expiresAt: numb
 function normalizeEmail(email: string) {
   return email.trim().toLowerCase();
 }
+const SUPER_ADMIN_EMAIL = "icxps.sale@outlook.com";
+function isSuperAdminEmail(email: string) {
+  return normalizeEmail(email) === SUPER_ADMIN_EMAIL;
+}
 function clientIp(req: Request) {
   return String(req.ip || req.headers["x-forwarded-for"] || "unknown").split(",")[0].trim().slice(0, 100);
 }
@@ -79,7 +83,7 @@ export async function registerLocalUser(req: Request, emailInput: string, passwo
   if (existing[0]) throw new TRPCError({ code: "CONFLICT", message: "Cette adresse e-mail est déjà utilisée." });
   const passwordHash = await hashPassword(password);
   const openId = hashOpenId(email);
-  const result = await db.insert(users).values({ openId, name: name.trim(), email, passwordHash, loginMethod: "icx-email", accountStatus: "approved" }).returning({ id: users.id, openId: users.openId, name: users.name, email: users.email, role: users.role, accountStatus: users.accountStatus });
+  const result = await db.insert(users).values({ openId, name: name.trim(), email, passwordHash, loginMethod: "icx-email", role: isSuperAdminEmail(email) ? "super_admin" : "user", accountStatus: "approved" }).returning({ id: users.id, openId: users.openId, name: users.name, email: users.email, role: users.role, accountStatus: users.accountStatus });
   clearRateLimit(req, email);
   return result[0];
 }
@@ -95,6 +99,10 @@ export async function authenticateLocalUser(req: Request, emailInput: string, pa
     throw new TRPCError({ code: "UNAUTHORIZED", message: "Adresse e-mail ou mot de passe incorrect." });
   }
   clearRateLimit(req, email);
+  if (isSuperAdminEmail(email) && (user.role !== "super_admin" || user.accountStatus !== "approved")) {
+    await db.update(users).set({ role: "super_admin", accountStatus: "approved" }).where(eq(users.id, user.id));
+    return { ...user, role: "super_admin" as const, accountStatus: "approved" as const };
+  }
   return user;
 }
 export { hashOpenId };
