@@ -27,3 +27,11 @@ Le tableau de bord `/admin` permet désormais au personnel ICX autorisé de cons
 Les coordonnées publiques ont été ajoutées au pied de page : icxps.sale@outlook.com, représentant légal +40 745 437 748, responsable des opérations et de la coordination +40 753 413 765.
 
 La page `/chat` propose une discussion d’orientation avec l’assistant IA ICX. L’assistant donne des informations générales avant le traitement humain, rappelle qu’il ne garantit ni emploi, permis, admission, prix ou partenariat, et renvoie vers les responsables pour toute décision ou validation. L’appel utilise `invokeLLM` côté serveur et exige les variables Render `BUILT_IN_FORGE_API_URL` et `BUILT_IN_FORGE_API_KEY`.
+
+## Assistant flottant et humanisation — 19 septembre 2026
+
+Le module de chat a été remplacé par `client/src/components/FloatingAssistant.tsx`. Il est accessible à droite sur toutes les pages publiques, sans quitter le parcours en cours. Il présente un état de disponibilité, un message d’accueil, des suggestions de sujets, une animation de réponse, l’historique de conversation, un état d’erreur explicite, une relance et un accès direct à l’équipe humaine par téléphone.
+
+Le serveur renvoie désormais des réponses dans les cinq langues du site, avec un ton plus naturel et une prochaine étape concrète. Le comportement de secours affiche les coordonnées ICX lorsque l’API IA ne répond pas, au lieu de laisser le demandeur sans indication.
+
+La typographie éditoriale des titres utilise désormais une police serif complémentaire. Le pied de page explique clairement qu’une première orientation automatique est suivie par une personne de l’équipe ICX pour les décisions importantes. Les routes publiques et la production ont été vérifiées après compilation.
