@@ -30,6 +30,7 @@ import { systemRouter } from "./_core/systemRouter";
 import { protectedProcedure, publicProcedure, router } from "./_core/trpc";
 import { storageGetSignedUrl, storagePut } from "./storage";
 import { invokeLLM } from "./_core/llm";
+import { chatSourcePolicy, formatLiveSourcesForPrompt, formatSourcesForPrompt, localizedSourceFallback, publicSources, selectChatSources } from "./chatKnowledge";
 
 const staffRoles = new Set((userRoles as readonly string[]).filter((role) => role !== "user"));
 const staffProcedure = protectedProcedure.use(({ ctx, next }) => {
@@ -171,19 +172,30 @@ export const appRouter = router({
   ai: router({
     chat: publicProcedure.input(z.object({ messages: z.array(z.object({ role: z.enum(["user", "assistant"]), content: z.string().min(1).max(4000) })).max(12), locale: z.string().max(8).default("fr") })).mutation(async ({ input }) => {
       const language = ({ fr: "français", en: "anglais", ro: "roumain", pt: "portugais", ar: "arabe" } as Record<string, string>)[input.locale] ?? "français";
-      const fallback = input.locale === "fr" ? "Voici une méthode autonome : 1) précisez le pays et l’objectif ; 2) rassemblez les sources et documents officiels ; 3) comparez les conditions applicables ; 4) préparez une demande structurée. Je peux détailler l’étape qui vous intéresse." : "Here is an autonomous method: 1) define the country and objective; 2) gather official sources and documents; 3) compare the applicable conditions; 4) prepare a structured request. I can detail the step you need.";
+      const latestQuestion = [...input.messages].reverse().find((message) => message.role === "user")?.content ?? "";
+      const selectedSources = selectChatSources(latestQuestion);
+      const sources = publicSources(selectedSources);
+      const fallback = localizedSourceFallback(input.locale, selectedSources);
+      const currentWebContext = await formatLiveSourcesForPrompt(selectedSources);
       try {
-        const response = await invokeLLM({ model: "gpt-5-mini", maxTokens: 900, messages: [{ role: "system", content: `Tu es l’assistant autonome, fiable et chaleureux d’ICX POWER SOLUTIONS SRL. Réponds en ${language}, avec des phrases naturelles, concrètes et courtes. Commence par répondre directement, puis donne une prochaine étape praticable ou une mini-checklist. Si la question est ambiguë, pose une seule question de précision. Donne uniquement des informations générales sur l’expertise internationale, le consulting, les études, permis de travail, partenariats, affiliations, sourcing, start-up, mines, ressources naturelles, énergie et financement. Aide l’utilisateur à avancer seul : explique les documents à réunir, les critères à vérifier, les sources officielles à consulter et la logique de décision. Ne promets jamais un emploi, un permis, une admission, un financement ou un partenariat. Ne renvoie pas automatiquement vers ICX ou ses responsables ; mentionne un relais humain uniquement si l’utilisateur demande une validation, un tarif, un contrat ou une décision personnalisée.` }, ...input.messages] });
+        const response = await invokeLLM({ model: "gpt-5-mini", maxTokens: 1100, messages: [{ role: "system", content: `Tu es l’assistant autonome, précis et réactif d’ICX POWER SOLUTIONS SRL. Réponds exclusivement en ${language}.
+${chatSourcePolicy}
+
+DOSSIER DE SOURCES SÉLECTIONNÉ :
+${formatSourcesForPrompt(selectedSources)}
+
+CONTEXTE ACTUEL DES SOURCES AUTORISÉES :
+${currentWebContext}` }, ...input.messages], timeoutMs: 15_000, maxRetries: 1 });
         const content = response.choices[0]?.message.content;
-        if (typeof content === "string" && content.trim()) return content;
+        if (typeof content === "string" && content.trim()) return { answer: content.trim(), sources };
         if (Array.isArray(content)) {
           const text = content.filter((part): part is { type: "text"; text: string } => part.type === "text").map((part) => part.text).join("\n").trim();
-          if (text) return text;
+          if (text) return { answer: text, sources };
         }
-        return fallback;
+        return { answer: fallback, sources };
       } catch (error) {
-        console.warn("[AI chat] Falling back to human handoff:", error instanceof Error ? error.message : error);
-        return fallback;
+        console.warn("[AI chat] Source-grounded fallback:", error instanceof Error ? error.message : error);
+        return { answer: fallback, sources };
       }
     }),
   }),

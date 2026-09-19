@@ -23,6 +23,14 @@ Set the following secrets in Render’s encrypted environment interface. Values 
 
 For a non-Manus OAuth provider, replace the auth integration deliberately; do not expose provider secrets in Vite variables.
 
+### Source-grounded assistant
+
+The ICX assistant runs entirely server-side. It receives the current visitor question, selects only the relevant entries from the reviewed source registry in `server/chatKnowledge.ts`, and displays those references under its answer. The registry distinguishes **ICX pages**, **official authorities or institutions**, and **partner reference sites**. It never treats a public reference link as confirmation of an ICX partnership.
+
+For an allowlisted external official or partner source, the server may fetch a short current HTML extract with a 3.5-second deadline and a four-hour in-memory cache. The assistant receives no visitor data in that request; it only reads the listed public URL. If an external page is unreachable or changes format, the assistant remains available using the reviewed registry entry and tells the visitor to confirm volatile details with the authority. This feature needs no additional Render environment variable.
+
+Keep the registry reviewed: add a source only after validating its URL and authority, remove an obsolete source promptly, and never place credentials or private URLs in it. The assistant’s model call requires `BUILT_IN_FORGE_API_URL` and `BUILT_IN_FORGE_API_KEY`; without them it returns a source-based fallback instead of an unsourced answer.
+
 The public **Sign in** and **Create account** buttons use the Manus OAuth application configured by `VITE_APP_ID`, `OAUTH_SERVER_URL`, and `VITE_OAUTH_PORTAL_URL`. The official defaults are `https://api.manus.im` for `OAUTH_SERVER_URL` and `https://manus.im` for `VITE_OAUTH_PORTAL_URL`; they are also declared in `render.yaml` and used as safe code defaults. `VITE_APP_ID` remains mandatory and must be the real OAuth application ID associated with this deployment. The application does not create a second local password system, because doing so would bypass the configured identity provider and create an unsafe parallel account store.
 
 Public service requests receive a private upload token after submission. Document uploads require `BUILT_IN_FORGE_API_URL` and `BUILT_IN_FORGE_API_KEY`, plus the reviewed migration `drizzle/0002_request_documents.sql`. The storage bucket must be private and the database must be migrated before enabling uploads.

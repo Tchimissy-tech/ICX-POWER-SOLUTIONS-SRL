@@ -17,10 +17,16 @@ All **public page imagery** is stored as local public assets. The former public-
 | `/images/hero-global-team.jpg` | `client/public/images/hero-global-team.jpg` | Homepage hero |
 | `/images/study-guidance.jpg` | `client/public/images/study-guidance.jpg` | Study guidance section |
 | `/images/sourcing-logistics.jpg` | `client/public/images/sourcing-logistics.jpg` | Sourcing page hero |
+| `/images/home/consulting-advisory.jpg` | `client/public/images/home/consulting-advisory.jpg` | Real professional consulting meeting for the homepage card |
+| `/images/home/strategic-partnerships.jpg` | `client/public/images/home/strategic-partnerships.jpg` | Real international agreement meeting for the homepage card |
 
 The submitted archive does not include the Jean Lansana KOUNDOUNO photograph. The website therefore deliberately retains the safe `JLK` initials fallback instead of producing a broken image. The exact replacement procedure is included in `client/public/images/README.md` and can be completed when the intended photograph is supplied.
 
 > The server still has a `/manus-storage/*` route for authenticated applicant-document storage. That route is separate from public website imagery and requires the production storage configuration described in the deployment guide.
+
+## Source-grounded assistant
+
+The public chat now selects a small set of reviewed, topic-specific sources for every question. It prioritises official authorities and institutions, then named partner reference sites, then the relevant ICX page. Each reply displays the exact source links used. For allowlisted external sites, the server may also retrieve a short, time-bounded current page extract without transmitting the visitor’s question or data. If that retrieval is unavailable, the assistant returns a transparent source-based fallback rather than fabricating an answer. Configuration and source-governance details are in `docs/DEPLOYMENT_RENDER.md`.
 
 ## Validation completed
 

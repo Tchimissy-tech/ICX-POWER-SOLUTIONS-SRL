@@ -4,7 +4,7 @@ A modular, multilingual foundation for an international opportunity platform spa
 
 ## What is implemented
 
-The public experience includes a responsive premium homepage, services ecosystem, study-orientation flow, institution directory, institution detail pages, partner transparency page, sourcing request form, partnership request form, light/dark mode, and a persistent language selector for French, English, Romanian, Portuguese, and Arabic RTL mode.
+The public experience includes a responsive premium homepage, services ecosystem, study-orientation flow, institution directory, institution detail pages, partner transparency page, sourcing request form, partnership request form, light/dark mode, a persistent language selector for French, English, Romanian, Portuguese, and Arabic RTL mode, and a source-grounded floating assistant. The assistant prioritises reviewed official and partner sources, exposes the links used, and degrades to a useful cited fallback rather than providing an unsourced answer.
 
 The secure application foundation includes Manus OAuth sign-in, applicant-owned application records, server-side controlled document upload, document metadata, bounded file types (PDF/JPEG/PNG), a 4 MB file limit, file signature verification, isolated storage keys, and audit logging. The dashboard is role-gated and shows operational counts and non-sensitive request summaries.
 
@@ -17,6 +17,7 @@ The secure application foundation includes Manus OAuth sign-in, applicant-owned 
 | Database | MySQL/TiDB via Drizzle | Users, applications, documents, institutions, programmes, requests, audit records |
 | Authentication | Manus OAuth | Secure session and identity provisioning |
 | Object storage | Manus S3 storage helper | Private document file bytes; database stores metadata and storage key only |
+| Chat knowledge | Reviewed source registry + server-side LLM | Topic-specific ICX, official and partner sources; optional bounded current-page extracts; cited responses |
 
 ## Local development
 
