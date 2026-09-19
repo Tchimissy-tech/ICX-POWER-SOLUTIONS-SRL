@@ -316,7 +316,7 @@ class SDKServer {
       lastSignedIn: signedInAt,
     });
 
-    return await db.ensureConfiguredSuperAdmin(user);
+    return user;
   }
 }
 

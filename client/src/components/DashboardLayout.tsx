@@ -226,20 +226,10 @@ function DashboardLayoutContent({
                   className="cursor-pointer text-destructive focus:text-destructive"
                 >
                   <LogOut className="mr-2 h-4 w-4" />
-                  <span>Se déconnecter</span>
+                  <span>Sign out</span>
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
-            <button
-              type="button"
-              onClick={() => void logout()}
-              className="mt-2 flex w-full items-center gap-3 rounded-lg px-2 py-2 text-sm text-destructive transition-colors hover:bg-destructive/10 focus:outline-none focus-visible:ring-2 focus-visible:ring-ring group-data-[collapsible=icon]:justify-center"
-              aria-label="Se déconnecter"
-              title="Se déconnecter"
-            >
-              <LogOut className="h-4 w-4 shrink-0" />
-              <span className="group-data-[collapsible=icon]:hidden">Se déconnecter</span>
-            </button>
           </SidebarFooter>
         </Sidebar>
         <div

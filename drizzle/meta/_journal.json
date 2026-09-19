@@ -5,15 +5,29 @@
     {
       "idx": 0,
       "version": "5",
-      "when": 1789841764205,
-      "tag": "0000_icy_korath",
+      "when": 1789744107276,
+      "tag": "0000_regular_impossible_man",
       "breakpoints": true
     },
     {
       "idx": 1,
       "version": "5",
-      "when": 1789841798584,
-      "tag": "0001_bumpy_stingray",
+      "when": 1789744283311,
+      "tag": "0001_puzzling_patriot",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "5",
+      "when": 1789776300000,
+      "tag": "0002_request_documents",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "5",
+      "when": 1789779900000,
+      "tag": "0003_account_approval",
       "breakpoints": true
     }
   ]
